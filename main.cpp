@@ -46,8 +46,6 @@ int main(int argc, char *argv[])
     myappTranslator.load(":/qtpatheditor_" + QLocale::system().name());
     app.installTranslator(&myappTranslator);
 
-    //c_out << myappTranslator;
-
     MainWindow w;
     w.show();
 
