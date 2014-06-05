@@ -390,24 +390,32 @@ void MainWindow::on_actionSave_triggered()
 }
 
 void MainWindow::saveRegistryUserPath(){
-    QStringList list;
+    QStringList pathList;
     QTableWidget* tw = ui->twUserPath;
     for(int row=0; row!=tw->rowCount(); ++row){
         QTableWidgetItem *item = tw->item(row,1);
-        list << item->text();
+        pathList << item->text();
     }
-    QString path = list.join(";");
+    QString path = pathList.join(";");
     qDebug() << "Save User data " << path;
+
+    m_reader = CPathReader( HKEY_CURRENT_USER, L"Environment", L"Path" );
+    m_reader.Write(pathList);
 }
 
 
 void MainWindow::saveRegistrySystemPath(){
-    QStringList list;
+    QStringList pathList;
     QTableWidget* tw = ui->twSystemPath;
     for(int row=0; row!=tw->rowCount(); ++row){
         QTableWidgetItem *item = tw->item(row,1);
-        list << item->text();
+        pathList << item->text();
     }
-    QString path = list.join(";");
+    QString path = pathList.join(";");
     qDebug() << "Save System data " << path;
+    m_reader = CPathReader( HKEY_LOCAL_MACHINE,
+                            L"SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Environment",
+                            L"Path" );
+    m_reader.Write(pathList);
+
 }
