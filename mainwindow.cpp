@@ -28,7 +28,6 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "cpathreader.h"
-#include "message.h"
 #include "utils.h"
 
 MainWindow::MainWindow(QWidget *parent) :

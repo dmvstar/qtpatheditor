@@ -30,6 +30,7 @@
 #include <QMainWindow>
 #include <QTableWidgetItem>
 #include <QItemSelectionModel>
+#include <QDebug>
 #include <QFileInfo>
 #include <QFileDialog>
 #include <vector>
