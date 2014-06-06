@@ -34,10 +34,11 @@ MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
 {
-    m_bIsAdmin = IsProcessAdmin( ::GetCurrentProcess());
+    mIsAdmin = IsProcessAdmin( ::GetCurrentProcess());
     ui->setupUi(this);
 
-    dataCahnged = false;
+    dataUserChanged = false;
+    dataSystemChanged = false;
     loadResources();
     loadUserPath();
     loadSystemPath();
@@ -51,7 +52,7 @@ void MainWindow::loadResources(){
 }
 
 void MainWindow::loadSystemPath(){
-    if(m_bIsAdmin) {
+    if(mIsAdmin) {
 
         QStringList header;
         header<<"*"<<tr("Path");
@@ -65,10 +66,10 @@ void MainWindow::loadSystemPath(){
         tw->horizontalHeader()->setSectionResizeMode(1,QHeaderView::Stretch);
         tw->setHorizontalHeaderLabels(header);
 
-        m_reader = CPathReader( HKEY_LOCAL_MACHINE,
+        mPathReader = CPathReader( HKEY_LOCAL_MACHINE,
                                 L"SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Environment",
                                 L"Path" );
-        m_reader.Read( mStrPathList );
+        mPathReader.Read( mStrPathList );
 
         tw->setRowCount(mStrPathList.size());
 
@@ -98,8 +99,8 @@ void MainWindow::loadUserPath(){
     tw->horizontalHeader()->setSectionResizeMode(1,QHeaderView::Stretch);
 
 
-    m_reader = CPathReader( HKEY_CURRENT_USER, L"Environment", L"Path" );
-    m_reader.Read( mStrPathList );
+    mPathReader = CPathReader( HKEY_CURRENT_USER, L"Environment", L"Path" );
+    mPathReader.Read( mStrPathList );
 
     tw->setRowCount(mStrPathList.size());
 
@@ -180,6 +181,7 @@ void MainWindow::on_btRemoveUserPath_clicked()
             ui->twUserPath->removeRow(row);
             ui->lineEditUserPath->clear();
         }
+        dataUserChanged = true;
     }
 }
 
@@ -197,6 +199,7 @@ void MainWindow::on_btRemoveSystemPath_clicked()
             ui->twSystemPath->removeRow(row);
             ui->lineEditSystemPath->clear();
         }
+        dataSystemChanged = true;
     }
 }
 
@@ -259,26 +262,26 @@ void MainWindow::on_btAddSystemPath_clicked()
 
 void MainWindow::on_btUpUserPath_clicked()
 {
-    moveItemUp(ui->twUserPath);
+    dataUserChanged = moveItemUp(ui->twUserPath);
 }
 
 void MainWindow::on_btDnUserPath_clicked()
 {
-    moveItemDn(ui->twUserPath);
+    dataUserChanged = moveItemDn(ui->twUserPath);
 }
 
 void MainWindow::on_btUpSystemPath_clicked()
 {
-    moveItemUp(ui->twSystemPath);
+    dataSystemChanged = moveItemUp(ui->twSystemPath);
 }
 
 void MainWindow::on_btDnSystemPath_clicked()
 {
-    moveItemDn(ui->twSystemPath);
+    dataSystemChanged = moveItemDn(ui->twSystemPath);
 }
 
-void MainWindow::addDirToPath(QString dir, QTableWidget* tw, QLineEdit* line ){
-
+bool MainWindow::addDirToPath(QString dir, QTableWidget* tw, QLineEdit* line ){
+    bool ret = false;
     if(!findPath(tw, dir)) {
         tw->setRowCount( tw->rowCount()+1 );
 
@@ -288,8 +291,9 @@ void MainWindow::addDirToPath(QString dir, QTableWidget* tw, QLineEdit* line ){
         tw->selectRow(tw->rowCount()-1);
         line->setText( dir );
 
-        dataCahnged = true;
+        ret = true;
     }
+    return ret;
 }
 
 bool MainWindow::findPath(QTableWidget* tw, QString dir){
@@ -306,7 +310,8 @@ bool MainWindow::findPath(QTableWidget* tw, QString dir){
     return found;
 }
 
-void    MainWindow::moveItemUp(QTableWidget* tw){
+bool    MainWindow::moveItemUp(QTableWidget* tw){
+    bool ret = false;
     QItemSelectionModel* sm = tw->selectionModel();
     QModelIndexList indexList = tw->selectionModel()->selectedIndexes();
     if( sm->hasSelection()){
@@ -324,11 +329,13 @@ void    MainWindow::moveItemUp(QTableWidget* tw){
             tw->setItem(index.row(),    1, item11);
             tw->selectRow(index.row()-1);
         }
-        dataCahnged = true;
+        ret = true;
     }
+    return ret;
 }
 
-void    MainWindow::moveItemDn(QTableWidget* tw){
+bool    MainWindow::moveItemDn(QTableWidget* tw){
+    bool ret = false;
     QItemSelectionModel* sm = tw->selectionModel();
     QModelIndexList indexList = tw->selectionModel()->selectedIndexes();
     if( sm->hasSelection()){
@@ -345,9 +352,10 @@ void    MainWindow::moveItemDn(QTableWidget* tw){
             tw->setItem(index.row(),    0, item10);
             tw->setItem(index.row(),    1, item11);
             tw->selectRow(index.row()+1);
+            ret = true;
         }
-        dataCahnged = true;
     }
+    return ret;
 }
 
 
@@ -355,16 +363,17 @@ void    MainWindow::moveItemDn(QTableWidget* tw){
 
 void MainWindow::on_btUpdUserPath_clicked()
 {
-    updateItemFor(ui->twUserPath, ui->lineEditUserPath);
+    dataUserChanged     = updateItemFor(ui->twUserPath, ui->lineEditUserPath);
 }
 
 void MainWindow::on_btUpdSystemPath_clicked()
 {
-    updateItemFor(ui->twSystemPath, ui->lineEditSystemPath);
+    dataSystemChanged   = updateItemFor(ui->twSystemPath, ui->lineEditSystemPath);
 }
 
 
-void MainWindow::updateItemFor(QTableWidget* tw, QLineEdit* edit ){
+bool MainWindow::updateItemFor(QTableWidget* tw, QLineEdit* edit ){
+    bool ret = false;
     QItemSelectionModel* sm = tw->selectionModel();
     QModelIndexList indexList = tw->selectionModel()->selectedIndexes();
     if( sm->hasSelection()){
@@ -375,18 +384,24 @@ void MainWindow::updateItemFor(QTableWidget* tw, QLineEdit* edit ){
             tw->setItem(index.row(),    0, getTableWidgetItemIconForPath(edit->text()));
             tw->setItem(index.row(),    1, item);
         }
-        dataCahnged = true;
+        ret = true;
     }
+    return ret;
 }
 
 void MainWindow::on_actionSave_triggered()
 {
     qDebug() << "Save All data";
-    if(dataCahnged) {
+    if(dataUserChanged) {
         saveRegistryUserPath();
-        saveRegistrySystemPath();
-        dataCahnged = false;
+        dataUserChanged = false;
     }
+
+    if(dataSystemChanged) {
+        saveRegistrySystemPath();
+        dataSystemChanged = false;
+    }
+
 }
 
 void MainWindow::saveRegistryUserPath(){
@@ -397,9 +412,9 @@ void MainWindow::saveRegistryUserPath(){
         pathList << item->text();
     }
     QString path = pathList.join(";");
-    //qDebug() << "Save User data " << path;
-    m_reader = CPathReader( HKEY_CURRENT_USER, L"Environment", L"Path" );
-    m_reader.Write(pathList);
+//    qDebug() << "Save User data " << path;
+    mPathReader = CPathReader( HKEY_CURRENT_USER, L"Environment", L"Path" );
+    mPathReader.Write(pathList);
 }
 
 
@@ -411,11 +426,10 @@ void MainWindow::saveRegistrySystemPath(){
         pathList << item->text();
     }
     QString path = pathList.join(";");
-/*
-    qDebug() << "Save System data " << path;
-    m_reader = CPathReader( HKEY_LOCAL_MACHINE,
+//    qDebug() << "Save System data " << path;
+    mPathReader = CPathReader( HKEY_LOCAL_MACHINE,
                             L"SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Environment",
                             L"Path" );
-    m_reader.Write(pathList);
-*/
+    mPathReader.Write(pathList);
+
 }

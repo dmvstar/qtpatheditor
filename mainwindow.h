@@ -93,27 +93,28 @@ private:
     QIcon icon_exist_path;//(":/dir_exist.png");
     QIcon icon_error_path;//(":/dir_exist.png");
 
-    bool m_bIsAdmin;
-    bool dataCahnged;
-    //StringListT m_str_list;
+    bool mIsAdmin;
+    bool dataUserChanged;
+    bool dataSystemChanged;
+
     QStringList mStrPathList;
 
-    CPathReader m_reader;
+    CPathReader mPathReader;
 
     void loadUserPath();
     void loadSystemPath();
     void loadResources();
-    void addDirToPath(QString dir, QTableWidget* tw, QLineEdit* line);
     bool findPath(QTableWidget* tw, QString dir);
 
     QString expandEnvironmentStrings(const QString &curPath);
     QTableWidgetItem* getTableWidgetItemIconForPath(const QString &curPath);
 
-    void    moveItemUp(QTableWidget* tw);
-    void    moveItemDn(QTableWidget* tw);
-    void    updateItemFor(QTableWidget* tw, QLineEdit* edit);
-    void    saveRegistryUserPath();
-    void    saveRegistrySystemPath();
+    bool addDirToPath(QString dir, QTableWidget* tw, QLineEdit* line);
+    bool moveItemUp(QTableWidget* tw);
+    bool moveItemDn(QTableWidget* tw);
+    bool updateItemFor(QTableWidget* tw, QLineEdit* edit);
+    void saveRegistryUserPath();
+    void saveRegistrySystemPath();
 
 
 };
