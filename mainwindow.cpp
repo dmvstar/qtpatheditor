@@ -397,8 +397,7 @@ void MainWindow::saveRegistryUserPath(){
         pathList << item->text();
     }
     QString path = pathList.join(";");
-    qDebug() << "Save User data " << path;
-
+    //qDebug() << "Save User data " << path;
     m_reader = CPathReader( HKEY_CURRENT_USER, L"Environment", L"Path" );
     m_reader.Write(pathList);
 }
@@ -412,10 +411,11 @@ void MainWindow::saveRegistrySystemPath(){
         pathList << item->text();
     }
     QString path = pathList.join(";");
+/*
     qDebug() << "Save System data " << path;
     m_reader = CPathReader( HKEY_LOCAL_MACHINE,
                             L"SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Environment",
                             L"Path" );
     m_reader.Write(pathList);
-
+*/
 }

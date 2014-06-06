@@ -83,6 +83,10 @@ bool CPathReader::Read( QStringList& strList )
     std::vector<BYTE> vBuffer(nChars + sizeof(wchar_t), 0);
     LPBYTE lpBuffer = vBuffer.data();
     if( RegQueryValueEx( hPathKey, lpszValueName_, 0, 0, lpBuffer, &nChars) != ERROR_SUCCESS)
+        return false;
+
+    if( RegCloseKey(hPathKey) != ERROR_SUCCESS)
+        qDebug() << "CPathReader::Read error Close Key[" << "hPathKey" << "]";
 
     qDebug() << "CPathReader::Read [" << "" << "]";
 
@@ -96,11 +100,19 @@ bool CPathReader::Write( const QStringList& strList )
     HKEY hPathKey = 0;
     if( RegOpenKeyEx( hKey_, lpszKeyName_, 0, KEY_SET_VALUE, &hPathKey) != ERROR_SUCCESS)
         return false;
+    if( RegCloseKey(hPathKey) != ERROR_SUCCESS)
+        qDebug() << "CPathReader::Read error Close Key[" << hPathKey << "]";
 
     QString strValue = joinPathList( strList, ";" );
+    QByteArray buffer( (const char*)strValue.utf16(), strValue.size()*2 );
 
-    const BYTE* lpcBuffer = reinterpret_cast<const BYTE*>( strValue.toStdWString().c_str() );
-    DWORD cbData = static_cast<DWORD>( strValue.size() * sizeof(wchar_t));
+    int iSizeS = strValue.toStdWString().size() * sizeof(wchar_t);
+    qDebug() << "CPathReader::Write :["<<lpszValueName_<<"]["<< iSizeS << "][]" << strValue;
+
+    const BYTE* lpcBuffer = reinterpret_cast<const BYTE*>(  buffer.data()   );
+    DWORD cbData          = static_cast<DWORD>(             iSizeS          );
+
+    qDebug() << "CPathReader::Write :[" << lpcBuffer[0] << lpcBuffer[1]<< "]";
     LSTATUS lStatus = RegSetValueEx( hPathKey, lpszValueName_, 0, REG_EXPAND_SZ, lpcBuffer, cbData);
     return lStatus == ERROR_SUCCESS;
 }
