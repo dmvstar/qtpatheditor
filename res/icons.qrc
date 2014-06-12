@@ -1,0 +1,11 @@
+<RCC>
+<qresource>
+    <file>dir_add.png</file>
+    <file>dir_del.png</file>
+    <file>dir_down.png</file>
+    <file>dir_edit.png</file>
+    <file>dir_exist.png</file>
+    <file>dir_non_exist.png</file>
+    <file>dir_up.png</file>
+</qresource>
+</RCC>
