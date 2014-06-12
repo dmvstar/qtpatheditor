@@ -431,5 +431,4 @@ void MainWindow::saveRegistrySystemPath(){
                             L"SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Environment",
                             L"Path" );
     mPathReader.Write(pathList);
-
 }

@@ -87,7 +87,6 @@ bool CPathReader::Read( QStringList& strList )
         qDebug() << "CPathReader::Read error Close Key[" << "hPathKey" << "]";
 
     qDebug() << "CPathReader::Read [" << "" << "]";
-
     strList = splitPathStr( QString::fromUtf16((ushort*)lpBuffer), ";" );
 
     return true;
@@ -112,6 +111,7 @@ bool CPathReader::Write( const QStringList& strList )
 
     qDebug() << "CPathReader::Write :[" << lpcBuffer[0] << lpcBuffer[1]<< "]";
     LSTATUS lStatus = RegSetValueEx( hPathKey, lpszValueName_, 0, REG_EXPAND_SZ, lpcBuffer, cbData);
+
     return lStatus == ERROR_SUCCESS;
 }
 
